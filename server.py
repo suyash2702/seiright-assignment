@@ -33,10 +33,6 @@ def check_compliance_with_openai(policy_text, company_text):
             "non_compliant_areas": ["list", "of", "non-compliant", "areas"],
             "analysis": {{
                 "summary": "Detailed summary of the compliance analysis",
-                "details": {{
-                    "compliance": "Specific compliance details",
-                    "non_compliance": "Specific non-compliance details"
-                }},
                 "recommendations": ["list", "of", "recommendations"]
             }}
         }}
