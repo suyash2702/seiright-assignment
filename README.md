@@ -15,6 +15,7 @@ The Compliance Checker is a web application that analyzes a company's website ag
 - **Web Scraping:** Beautiful Soup
 - **API Integration:** OpenAI
 - **Environment Management:** dotenv
+- **Hosting:** AWS EC2
 
 ## Hosted Frontend
 The frontend page is hosted at http://35.154.37.45:8000/
