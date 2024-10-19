@@ -41,7 +41,7 @@ def check_compliance_with_openai(policy_text, company_text):
             }}
         }}
         """
-        
+
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -53,10 +53,10 @@ def check_compliance_with_openai(policy_text, company_text):
         if not response or not response.choices:
             raise Exception("OpenAI API returned an empty or invalid response.")
 
+        # Use .strip() to remove any leading/trailing whitespace
         llmResponse = response.choices[0].message.content.strip().replace('```','').replace('json','')
-        print(llmResponse)
         return llmResponse
-    
+
     except Exception as e:
         raise Exception(f"OpenAI API error: {str(e)}")
 
@@ -74,7 +74,7 @@ def check_policy_compliance():
 
         # Debug: Print or log the fetched content to check if it's valid
         print("Policy Text:", policy_text)
-        print("Company:", company_text)
+        print("Company Text:", company_text)
 
         # If either text is empty, return an error
         if not policy_text or not company_text:
