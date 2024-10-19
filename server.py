@@ -51,10 +51,12 @@ def check_compliance_with_openai(policy_text, company_text):
 
         # Use .strip() to remove any leading/trailing whitespace
         llmResponse = response.choices[0].message.content.strip().replace('```','').replace('json','')
+        print(llmResponse)
         return llmResponse
 
     except Exception as e:
         raise Exception(f"OpenAI API error: {str(e)}")
+
 
 
 @app.route('/')
@@ -84,6 +86,7 @@ def check_policy_compliance():
 
         # Rest of the code for formatting the response
         compliance_report_json = json.loads(compliance_report)  # Convert OpenAI response string to JSON object
+        print('compliance_report: ',compliance_report)
 
         formatted_response = {
             "isSuccess": True,
@@ -93,15 +96,11 @@ def check_policy_compliance():
                 "non_compliant_areas": compliance_report_json['non_compliant_areas'],
                 "analysis": {
                     "summary": compliance_report_json['analysis']['summary'],
-                    "details": {
-                        "compliance": compliance_report_json['analysis']['details']['compliance'],
-                        "non_compliance": compliance_report_json['analysis']['details']['non_compliance'],
-                    },
                     "recommendations": compliance_report_json['analysis']['recommendations']
                 }
             }
         }
-
+        print('formatted response: ', formatted_response)
         return jsonify(formatted_response), 200
     
     except Exception as e:
