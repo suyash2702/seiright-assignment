@@ -1,0 +1,6 @@
+curl -X POST "http://localhost:8000/check_compliance" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "policy_url": "https://docs.stripe.com/treasury/marketing-treasury",
+           "company_url": "https://mercury.com/"
+         }'
