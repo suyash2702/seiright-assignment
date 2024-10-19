@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from flask import Flask, request, jsonify
+from werkzeug.exceptions import HTTPException
 from pydantic import BaseModel, HttpUrl
 import requests
 from bs4 import BeautifulSoup
@@ -7,10 +8,9 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-app = FastAPI()
+app = Flask(__name__)
 
 class UrlInput(BaseModel):
     policy_url: HttpUrl
@@ -24,13 +24,10 @@ def fetch_content(url):
 def check_compliance_with_openai(policy_text, company_text):
     prompt = f"""
     You are a compliance checker. Your task is to analyze the following company's text against a given policy.
-
     Policy:
     {policy_text}
-
     Company Text:
     {company_text}
-
     Please provide a detailed analysis of how well the company text adheres to the policy. 
     Identify specific areas of compliance and non-compliance. 
     Format your response as a JSON object with the following structure:
@@ -40,28 +37,28 @@ def check_compliance_with_openai(policy_text, company_text):
         "analysis": "Detailed explanation of the compliance analysis"
     }}
     """
-
-    response = client.chat.completions.create(model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant that analyzes compliance."},
-        {"role": "user", "content": prompt}
-    ])
-
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that analyzes compliance."},
+            {"role": "user", "content": prompt}
+        ]
+    )
     return response.choices[0].message.content.strip()
 
-@app.post("/check_compliance")
-async def check_policy_compliance(urls: UrlInput):
+@app.route('/check_compliance', methods=['POST'])
+def check_policy_compliance():
     try:
-        policy_text = fetch_content(urls.policy_url)
-        company_text = fetch_content(urls.company_url)
+        data = request.json
+        url_input = UrlInput(**data)
+        policy_text = fetch_content(url_input.policy_url)
+        company_text = fetch_content(url_input.company_url)
         
         compliance_report = check_compliance_with_openai(policy_text, company_text)
         
-        return compliance_report
+        return jsonify(compliance_report), 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    app.run(host="0.0.0.0", port=8000)
