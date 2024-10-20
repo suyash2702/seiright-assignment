@@ -26,9 +26,8 @@ The backend API is built using Flask and performs the compliance check by fetchi
 ## Installation
 To run the backend API:
 1. Clone the repository.
-2. Install the required packages using `pip install -r requirements.txt`.
-3. Set up your `.env` file with your OpenAI API key.
-4. Run the Flask application using `python app.py`.
+2. Set up your `.env` file with your OpenAI API key.
+3. Run the Flask application using `python server.py`.
 
 ## Usage
 1. Enter the URLs for the company website and the policy document.
