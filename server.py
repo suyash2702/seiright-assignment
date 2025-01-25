@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify, render_template
-from werkzeug.exceptions import HTTPException
 import requests
 from bs4 import BeautifulSoup
-from openai import OpenAI
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import json
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ def fetch_content(url):
     soup = BeautifulSoup(response.content, 'html.parser')
     return soup.get_text()
 
-def check_compliance_with_openai(policy_text, company_text):
+def check_compliance_with_gemini(policy_text, company_text):
     try:
         prompt = f"""
         You are a compliance checker. Your task is to analyze the following company's website against a given policy.
@@ -38,26 +38,18 @@ def check_compliance_with_openai(policy_text, company_text):
         }}
         """
 
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that analyzes compliance."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        response = model.generate_content(prompt)
         
-        if not response or not response.choices:
-            raise Exception("OpenAI API returned an empty or invalid response.")
+        if not response or not response.text:
+            raise Exception("Gemini API returned an empty or invalid response.")
 
         # Use .strip() to remove any leading/trailing whitespace
-        llmResponse = response.choices[0].message.content.strip().replace('```','').replace('json','')
+        llmResponse = response.text.strip().replace('```','').replace('json','')
         print(llmResponse)
         return llmResponse
 
     except Exception as e:
-        raise Exception(f"OpenAI API error: {str(e)}")
-
-
+        raise Exception(f"Gemini API error: {str(e)}")
 
 @app.route('/')
 def index():
@@ -82,10 +74,10 @@ def check_policy_compliance():
                 "data": None
             }), 400
         
-        compliance_report = check_compliance_with_openai(policy_text, company_text)
+        compliance_report = check_compliance_with_gemini(policy_text, company_text)
 
         # Rest of the code for formatting the response
-        compliance_report_json = json.loads(compliance_report)  # Convert OpenAI response string to JSON object
+        compliance_report_json = json.loads(compliance_report)  # Convert Gemini response string to JSON object
         print('compliance_report: ',compliance_report)
 
         formatted_response = {
@@ -110,6 +102,5 @@ def check_policy_compliance():
             "data": None
         }), 500
 
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8000, debug=True)

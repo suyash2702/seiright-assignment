@@ -1,0 +1,7 @@
+flask
+bs4
+openai
+python-dotenv
+google
+google-generativeai
+
